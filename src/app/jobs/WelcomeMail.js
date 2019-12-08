@@ -1,3 +1,4 @@
+import { format, parseISO } from 'date-fns';
 import Mail from '../../lib/Mail';
 
 class WelcomeMail {
@@ -15,8 +16,11 @@ class WelcomeMail {
       context: {
         student: student.name,
         plan: plan.title,
-        endDate: enrollment.end_date,
-        price: plan.price,
+        endDate: format(parseISO(enrollment.end_date), 'dd/MM/yyyy'),
+        price: Number(plan.price).toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL',
+        }),
       },
     });
   }
