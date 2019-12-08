@@ -1,4 +1,6 @@
 import * as Yup from 'yup';
+import Queue from '../../lib/Queue';
+import WelcomeMail from '../jobs/WelcomeMail';
 import Enrollment from '../models/Enrollment';
 import Student from '../models/Student';
 import Plan from '../models/Plan';
@@ -45,15 +47,24 @@ class EnrollmentController {
       return res.status(400).json({ error: 'Validation fails.' });
     }
 
-    if (!(await Student.findByPk(req.body.student_id))) {
+    const student = await Student.findByPk(req.body.student_id);
+    if (!student) {
       return res.status(404).json({ error: 'Student was not found.' });
     }
 
-    if (!(await Plan.findByPk(req.body.plan_id))) {
+    const plan = await Plan.findByPk(req.body.plan_id);
+    if (!plan) {
       return res.status(404).json({ error: 'Plan was not found.' });
     }
 
     const enrollment = await Enrollment.create(req.body);
+    enrollment.plan = plan;
+
+    await Queue.add(WelcomeMail.key, {
+      student,
+      plan,
+      enrollment,
+    });
 
     const { id, student_id, plan_id, start_date } = enrollment;
 
