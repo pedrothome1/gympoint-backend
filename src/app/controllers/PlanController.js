@@ -3,7 +3,11 @@ import Plan from '../models/Plan';
 
 class PlanController {
   async index(req, res) {
-    return res.json(await Plan.findAll());
+    const plans = await Plan.findAll({
+      attributes: ['id', 'title', 'duration', 'price'],
+    });
+
+    return res.json(plans);
   }
 
   async show(req, res) {
@@ -32,9 +36,9 @@ class PlanController {
       return res.status(400).json({ error: 'Validation fails.' });
     }
 
-    const plan = await Plan.create(req.body);
+    const { title, duration, price } = await Plan.create(req.body);
 
-    return res.json(plan);
+    return res.json({ title, duration, price });
   }
 
   async update(req, res) {
